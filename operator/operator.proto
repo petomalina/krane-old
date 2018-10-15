@@ -35,6 +35,7 @@ message Job {
 }
 
 enum Status {
+    NEW = 0;
     INITIALIZING = 1;
     PENDING = 2;
 
