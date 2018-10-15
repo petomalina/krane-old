@@ -1,0 +1,4 @@
+steps:
+- image: znly/protoc
+  cmd: |
+    protoc --go_out=plugins=grpc:./pkg *.proto
