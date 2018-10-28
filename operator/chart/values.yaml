@@ -1,4 +1,4 @@
-image: gcr.io/image:tag
+image: gelidus/krane:latest
 
 service:
   type: ClusterIP

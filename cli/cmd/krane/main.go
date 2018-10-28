@@ -49,6 +49,7 @@ func main() {
 
 	app.Commands = []cli.Command{
 		{
+			// @Deprecated
 			Name:    "create",
 			Aliases: []string{"c"},
 			Action: func(c *cli.Context) error {

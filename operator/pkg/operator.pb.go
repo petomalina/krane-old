@@ -16,7 +16,7 @@ It has these top-level messages:
 	Job
 	JobList
 */
-package operator
+package pkg
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"

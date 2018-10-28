@@ -1,7 +1,7 @@
 FROM golang:1.11.1-alpine3.8 as builder
 
 # Install SSL ca certificates
-RUN apk update && apk add git && apk add ca-certificates
+RUN apk add --update --no-cache ca-certificates git
 
 # Create appuser
 RUN adduser -D -g '' appuser
@@ -18,7 +18,6 @@ COPY . /krane
 
 # Build the binary
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /go/bin/krane-operator ./cmd/krane-operator
-
 
 # Build a small image
 FROM scratch

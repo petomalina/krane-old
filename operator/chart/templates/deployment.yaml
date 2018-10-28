@@ -1,7 +1,8 @@
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "chart.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ template "chart.name" . }}
     chart: {{ template "chart.chart" . }}
@@ -21,8 +22,8 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: {{ .Values.image | quote }}
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 80
