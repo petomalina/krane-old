@@ -2,9 +2,11 @@ module github.com/petomalina/krane/operator
 
 require (
 	github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973 // indirect
+	github.com/emicklei/go-restful v2.8.0+incompatible // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-logr/logr v0.0.0-20180629235805-9fb12b3b21c5 // indirect
 	github.com/go-logr/zapr v0.0.0-20180713202756-7536572e8d55 // indirect
+	github.com/go-openapi/spec v0.17.2 // indirect
 	github.com/gogo/protobuf v1.1.1 // indirect
 	github.com/golang/groupcache v0.0.0-20181024230925-c65c006176ff // indirect
 	github.com/golang/protobuf v1.2.0
@@ -47,6 +49,8 @@ require (
 	k8s.io/api v0.0.0-20181027024800-9fcf73cc980b
 	k8s.io/apimachinery v0.0.0-20181026144617-b7f9f1fa80ae
 	k8s.io/client-go v9.0.0+incompatible // indirect
+	k8s.io/code-generator v0.0.0-20181026224033-5d042c2d6552 // indirect
+	k8s.io/gengo v0.0.0-20181019081622-7338e4bfd691 // indirect
 	k8s.io/kube-openapi v0.0.0-20181026222903-0d1aeffe1c68 // indirect
 	sigs.k8s.io/controller-runtime v0.1.6
 )
