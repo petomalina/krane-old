@@ -4,7 +4,7 @@ build/operator:
 	docker build -t gelidus/krane-operator ./krane-operator
 
 push/operator:
-	docker push gelidus/krane-operator
+	docker push gelidus/krane-operator:latest
 
 deploy/operator:
 	helm upgrade --install operator --namespace=krane ./krane-operator/chart

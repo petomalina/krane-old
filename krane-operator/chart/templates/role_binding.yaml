@@ -1,11 +1,11 @@
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: krane-krane-operator
+  name: krane-operator
 subjects:
 - kind: ServiceAccount
-  name: krane-krane-operator
+  name: krane-operator
 roleRef:
   kind: Role
-  name: krane-krane-operator
+  name: krane-operator
   apiGroup: rbac.authorization.k8s.io

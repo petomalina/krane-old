@@ -1,4 +1,4 @@
-image: gelidus/krane:latest
+image: gelidus/krane-operator:latest
 
 service:
   type: ClusterIP
