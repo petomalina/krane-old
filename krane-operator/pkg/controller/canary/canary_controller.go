@@ -92,12 +92,7 @@ func (r *ReconcileCanary) Reconcile(request reconcile.Request) (reconcile.Result
 	// initialize with the default test bootstrap phase and reconcile
 	if instance.Status.Phase == "" {
 		log.Printf("Bootsraping newly created Canary %s/%s\n", instance.Namespace, instance.Name)
-
-		instance = instance.DeepCopy()
-		instance.Status.Phase = kranev1alpha1.CanaryPhaseTest
-		instance.Status.State = kranev1alpha1.CanaryStatusBootstrap
-
-		return reconcile.Result{Requeue: true}, r.client.Update(context.TODO(), instance)
+		return r.updateStatus(instance, kranev1alpha1.CanaryPhaseTest, kranev1alpha1.CanaryStatusBootstrap)
 	}
 
 	switch instance.Status.Phase {
@@ -111,12 +106,20 @@ func (r *ReconcileCanary) Reconcile(request reconcile.Request) (reconcile.Result
 	}
 }
 
+func (r *ReconcileCanary) updateStatus(cr *kranev1alpha1.Canary, phase string, state string) (reconcile.Result, error) {
+	instance := cr.DeepCopy()
+	instance.Status.Phase = phase
+	instance.Status.State = state
+
+	return reconcile.Result{Requeue: true}, r.client.Update(context.TODO(), instance)
+}
+
 func (r *ReconcileCanary) reconcileTestPhase(cr *kranev1alpha1.Canary) (reconcile.Result, error) {
 	// get the current pod or create a new one
 	pod, err := r.bootstrapTestPhase(cr)
 	if err != nil || pod == nil {
 		if err != nil {
-			log.Printf("An error occured during test bootstrap %s/%s: %s\n", cr.Namespace, cr.Name, err)
+			log.Printf("An error occured during TEST bootstrap %s/%s: %s\n", cr.Namespace, cr.Name, err)
 		}
 		return reconcile.Result{}, err
 	}
@@ -129,7 +132,7 @@ func (r *ReconcileCanary) reconcileAnalysisPhase(cr *kranev1alpha1.Canary) (reco
 	pod, err := r.bootstrapAnalysisPhase(cr)
 	if err != nil || pod == nil {
 		if err != nil {
-			log.Printf("An error occured during analysis bootstrap %s/%s: %s\n", cr.Namespace, cr.Name, err)
+			log.Printf("An error occured during ANALYSIS bootstrap %s/%s: %s\n", cr.Namespace, cr.Name, err)
 		}
 		return reconcile.Result{}, err
 	}
@@ -155,7 +158,7 @@ func (r *ReconcileCanary) bootstrapTestPhase(cr *kranev1alpha1.Canary) (*corev1.
 	}
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name + "-pod",
+			Name:      name,
 			Namespace: cr.Namespace,
 			Labels:    labels,
 		},
@@ -200,7 +203,7 @@ func (r *ReconcileCanary) bootstrapAnalysisPhase(cr *kranev1alpha1.Canary) (*cor
 	}
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name + "-pod",
+			Name:      name,
 			Namespace: cr.Namespace,
 			Labels:    labels,
 		},
