@@ -1,7 +1,7 @@
-apiVersion: krane.petomalina.com/v1alpha1
-kind: Canary
-metadata:
-  name: example-canary
-spec:
-  # Add fields here
-  size: 3
+#apiVersion: krane.petomalina.com/v1alpha1
+#kind: Canary
+#metadata:
+#  name: example-canary
+#spec:
+#  # Add fields here
+#  size: 3

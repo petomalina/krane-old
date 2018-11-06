@@ -5,8 +5,8 @@ import (
 	"log"
 	"runtime"
 
-	sdkVersion "github.com/krane-operator-framework/operator-sdk/version"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
+	sdkVersion "github.com/operator-framework/operator-sdk/version"
 	"github.com/petomalina/krane/operator/pkg/apis"
 	"github.com/petomalina/krane/operator/pkg/controller"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
