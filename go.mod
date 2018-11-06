@@ -4,7 +4,7 @@ require (
 	cloud.google.com/go v0.31.0 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/operator-framework/operator-sdk v0.1.0
-	github.com/petomalina/krane/operator v0.0.0-20181028194710-55b8d97de006 // indirect
+	github.com/petomalina/krane/krane-operator v0.0.0-20181028194710-55b8d97de006 // indirect
 	github.com/spf13/pflag v1.0.3
 	k8s.io/api v0.0.0-20181027024800-9fcf73cc980b
 	k8s.io/apimachinery v0.0.0-20181026144617-b7f9f1fa80ae

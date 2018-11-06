@@ -1,4 +1,4 @@
-module github.com/petomalina/krane/operator
+module github.com/petomalina/krane/krane-operator
 
 require (
 	cloud.google.com/go v0.32.0

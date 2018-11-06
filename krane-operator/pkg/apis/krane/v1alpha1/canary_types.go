@@ -7,16 +7,46 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+
+const (
+	CanaryStatusPending    = "pending"
+	CanaryStatusInProgress = "in_progress"
+	CanaryStatusSuccess    = "success"
+	CanaryStatusFailed     = "failed"
+)
+
+const (
+	CanaryPhaseBootstrap = "bootstrap"
+	CanaryPhaseTest      = "testing"
+	CanaryPhaseAnalysis  = "analysis"
+)
+
 // CanarySpec defines the desired state of Canary
 type CanarySpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "krane-operator-sdk generate k8s" to regenerate code after modifying this file
+	// Target is the service that should be used for testing
+	// purposes
+	Target string `json:"target,omitempty"`
+
+	TestPhase     TestPhaseSpec     `json:"testPhase,omitempty"`
+	AnalysisPhase AnalysisPhaseSpec `json:"analysisPhase,omitempty"`
+}
+
+// TestPhaseSpec defines the configuration used to test the target
+type TestPhaseSpec struct {
+	Image string `json:"image,omitempty"`
+}
+
+// AnalysisPhaseSpec defines a resource that will accept metrics for further
+// analysis purposes
+type AnalysisPhaseSpec struct {
+	Image string `json:"image,omitempty"`
 }
 
 // CanaryStatus defines the observed state of Canary
 type CanaryStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "krane-operator-sdk generate k8s" to regenerate code after modifying this file
+	Phase string `json:"phase,omitempty"`
+	State string `json:"state,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

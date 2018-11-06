@@ -1,7 +1,7 @@
 package apis
 
 import (
-	"github.com/petomalina/krane/operator/pkg/apis/krane/v1alpha1"
+	"github.com/petomalina/krane/krane-operator/pkg/apis/krane/v1alpha1"
 )
 
 func init() {

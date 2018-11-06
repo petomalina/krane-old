@@ -5,7 +5,7 @@ import (
 	"github.com/google/go-cloud/blob"
 	"github.com/google/go-cloud/blob/gcsblob"
 	"github.com/google/go-cloud/gcp"
-	"github.com/petomalina/krane/operator/pkg"
+	"github.com/petomalina/krane/krane-operator/pkg"
 	"github.com/urfave/cli"
 	"google.golang.org/grpc"
 	"os"

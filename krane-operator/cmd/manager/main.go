@@ -7,8 +7,8 @@ import (
 
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
-	"github.com/petomalina/krane/operator/pkg/apis"
-	"github.com/petomalina/krane/operator/pkg/controller"
+	"github.com/petomalina/krane/krane-operator/pkg/apis"
+	"github.com/petomalina/krane/krane-operator/pkg/controller"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"

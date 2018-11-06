@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/petomalina/krane/operator/pkg/controller/canary"
+	"github.com/petomalina/krane/krane-operator/pkg/controller/canary"
 )
 
 func init() {
