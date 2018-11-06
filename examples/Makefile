@@ -3,3 +3,5 @@ simple/deploy:
 
 simple/clean:
 	helm delete krane-demo-simple --purge
+
+simple/redeploy: simple/clean simple/deploy

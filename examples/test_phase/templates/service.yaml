@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "simple.fullname" . }}
+  name: {{ include "chart.fullname" . }}
   labels:
     app: {{ include "chart.name" . }}
     chart: {{ include "chart.chart" . }}
@@ -15,5 +15,5 @@ spec:
       protocol: TCP
       name: http
   selector:
-    app: {{ include "simple.name" . }}
+    app: {{ include "chart.name" . }}
     release: {{ .Release.Name }}

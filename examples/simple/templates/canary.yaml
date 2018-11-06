@@ -8,10 +8,13 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
-  target: ""
+  target: {{ include "chart.fullname" . }}-target
   testPhase:
     image: "ubuntu"
-    cmd: [sleep, "10"]
+    cmd:
+      - /bin/bash
+      - "-c"
+      - "apt-get update -y && apt-get install curl -y && echo $KRANE_TARGET && curl $KRANE_TARGET"
   analysisPhase:
     image: "ubuntu"
     cmd: [sleep, "10"]
