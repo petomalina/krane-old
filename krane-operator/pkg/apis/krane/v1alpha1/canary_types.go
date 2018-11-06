@@ -10,10 +10,10 @@ import (
 // Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 
 const (
-	CanaryStatusBootstrap  string = "bootstrap"
-	CanaryStatusInProgress        = "in_progress"
-	CanaryStatusSuccess           = "success"
-	CanaryStatusFailed            = "failed"
+	CanaryStateBootstrap  string = "bootstrap"
+	CanaryStateInProgress        = "in_progress"
+	CanaryStateSuccess           = "success"
+	CanaryStateFailed            = "failed"
 )
 
 const (
@@ -33,13 +33,15 @@ type CanarySpec struct {
 
 // TestPhaseSpec defines the configuration used to test the target
 type TestPhaseSpec struct {
-	Image string `json:"image,omitempty"`
+	Image string   `json:"image,omitempty"`
+	Cmd   []string `json:"cmd,omitempty"`
 }
 
 // AnalysisPhaseSpec defines a resource that will accept metrics for further
 // analysis purposes
 type AnalysisPhaseSpec struct {
-	Image string `json:"image,omitempty"`
+	Image string   `json:"image,omitempty"`
+	Cmd   []string `json:"cmd,omitempty"`
 }
 
 // CanaryStatus defines the observed state of Canary

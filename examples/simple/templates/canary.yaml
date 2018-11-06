@@ -10,6 +10,8 @@ metadata:
 spec:
   target: ""
   testPhase:
-    image: ""
+    image: "ubuntu"
+    cmd: [sleep, "10"]
   analysisPhase:
-    image: ""
+    image: "ubuntu"
+    cmd: [sleep, "10"]

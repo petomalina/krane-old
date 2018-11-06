@@ -92,18 +92,44 @@ func (r *ReconcileCanary) Reconcile(request reconcile.Request) (reconcile.Result
 	// initialize with the default test bootstrap phase and reconcile
 	if instance.Status.Phase == "" {
 		log.Printf("Bootsraping newly created Canary %s/%s\n", instance.Namespace, instance.Name)
-		return r.updateStatus(instance, kranev1alpha1.CanaryPhaseTest, kranev1alpha1.CanaryStatusBootstrap)
+		return r.updateStatus(instance, kranev1alpha1.CanaryPhaseTest, kranev1alpha1.CanaryStateBootstrap)
 	}
+
+	// output variables for each phase
+	var res reconcile.Result
+	// var err error // also used, but declared above
+	var state string
 
 	switch instance.Status.Phase {
 	case kranev1alpha1.CanaryPhaseTest:
-		return r.reconcileTestPhase(instance)
+		res, state, err = r.reconcileTestPhase(instance)
 	case kranev1alpha1.CanaryPhaseAnalysis:
-		return r.reconcileAnalysisPhase(instance)
+		res, state, err = r.reconcileAnalysisPhase(instance)
 	default:
 		log.Printf("Unrecognized instance phase occured for %s/%s: %s", instance.Namespace, instance.Name, instance.Status.Phase)
 		return reconcile.Result{}, nil
 	}
+
+	// reschedule in case of error within the phase (no in-phase errors are reported here)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	// update status and reconcile in case of status change
+	if instance.Status.State != state {
+		if state == kranev1alpha1.CanaryStateSuccess || state == kranev1alpha1.CanaryStateFailed {
+			log.Printf("Canary analysis finished for %s/%s, result: %s", instance.Namespace, instance.Name, state)
+
+			// if we just finished the test phase and canary is scheduled, change phases
+			if instance.Spec.AnalysisPhase.Image != "" && instance.Status.Phase == kranev1alpha1.CanaryPhaseTest && state == kranev1alpha1.CanaryStateSuccess {
+				return r.updateStatus(instance, kranev1alpha1.CanaryPhaseAnalysis, kranev1alpha1.CanaryStateBootstrap)
+			}
+		}
+
+		return r.updateStatus(instance, instance.Status.Phase, state)
+	}
+
+	return res, nil
 }
 
 func (r *ReconcileCanary) updateStatus(cr *kranev1alpha1.Canary, phase string, state string) (reconcile.Result, error) {
@@ -114,30 +140,54 @@ func (r *ReconcileCanary) updateStatus(cr *kranev1alpha1.Canary, phase string, s
 	return reconcile.Result{Requeue: true}, r.client.Update(context.TODO(), instance)
 }
 
-func (r *ReconcileCanary) reconcileTestPhase(cr *kranev1alpha1.Canary) (reconcile.Result, error) {
+func (r *ReconcileCanary) reconcileTestPhase(cr *kranev1alpha1.Canary) (reconcile.Result, string, error) {
 	// get the current pod or create a new one
 	pod, err := r.bootstrapTestPhase(cr)
 	if err != nil || pod == nil {
 		if err != nil {
 			log.Printf("An error occured during TEST bootstrap %s/%s: %s\n", cr.Namespace, cr.Name, err)
 		}
-		return reconcile.Result{}, err
+		return reconcile.Result{}, kranev1alpha1.CanaryStateBootstrap, err
 	}
 
-	return reconcile.Result{}, nil
+	// switch based on the pod internal status
+	switch pod.Status.Phase {
+	case corev1.PodRunning:
+		return reconcile.Result{}, kranev1alpha1.CanaryStateInProgress, nil
+
+	case corev1.PodSucceeded:
+		return reconcile.Result{}, kranev1alpha1.CanaryStateSuccess, nil
+
+	case corev1.PodFailed:
+		return reconcile.Result{}, kranev1alpha1.CanaryStateFailed, nil
+	}
+
+	return reconcile.Result{}, cr.Status.Phase, nil
 }
 
-func (r *ReconcileCanary) reconcileAnalysisPhase(cr *kranev1alpha1.Canary) (reconcile.Result, error) {
+func (r *ReconcileCanary) reconcileAnalysisPhase(cr *kranev1alpha1.Canary) (reconcile.Result, string, error) {
 	// get the current pod or create a new one
 	pod, err := r.bootstrapAnalysisPhase(cr)
 	if err != nil || pod == nil {
 		if err != nil {
 			log.Printf("An error occured during ANALYSIS bootstrap %s/%s: %s\n", cr.Namespace, cr.Name, err)
 		}
-		return reconcile.Result{}, err
+		return reconcile.Result{}, kranev1alpha1.CanaryStateBootstrap, err
 	}
 
-	return reconcile.Result{}, nil
+	// switch based on the pod internal status
+	switch pod.Status.Phase {
+	case corev1.PodRunning:
+		return reconcile.Result{}, kranev1alpha1.CanaryStateInProgress, nil
+
+	case corev1.PodSucceeded:
+		return reconcile.Result{}, kranev1alpha1.CanaryStateSuccess, nil
+
+	case corev1.PodFailed:
+		return reconcile.Result{}, kranev1alpha1.CanaryStateFailed, nil
+	}
+
+	return reconcile.Result{}, cr.Status.Phase, nil
 }
 
 func (r *ReconcileCanary) bootstrapTestPhase(cr *kranev1alpha1.Canary) (*corev1.Pod, error) {
@@ -165,11 +215,18 @@ func (r *ReconcileCanary) bootstrapTestPhase(cr *kranev1alpha1.Canary) (*corev1.
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{
 				{
-					Name:    "busybox",
-					Image:   "busybox",
-					Command: []string{"sleep", "10"},
+					Name:    "tester",
+					Image:   cr.Spec.TestPhase.Image,
+					Command: cr.Spec.TestPhase.Cmd,
+					Env: []corev1.EnvVar{
+						{
+							Name:  "KRANE_TARGET",
+							Value: cr.Spec.Target,
+						},
+					},
 				},
 			},
+			RestartPolicy: corev1.RestartPolicyNever,
 		},
 	}
 
@@ -210,11 +267,18 @@ func (r *ReconcileCanary) bootstrapAnalysisPhase(cr *kranev1alpha1.Canary) (*cor
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{
 				{
-					Name:    "busybox",
-					Image:   "busybox",
-					Command: []string{"sleep", "10"},
+					Name:    "analyzer",
+					Image:   cr.Spec.AnalysisPhase.Image,
+					Command: cr.Spec.AnalysisPhase.Cmd,
+					Env: []corev1.EnvVar{
+						{
+							Name:  "KRANE_TARGET",
+							Value: cr.Spec.Target,
+						},
+					},
 				},
 			},
+			RestartPolicy: corev1.RestartPolicyNever,
 		},
 	}
 
