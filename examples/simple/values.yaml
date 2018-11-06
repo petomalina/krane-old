@@ -1,10 +1,4 @@
-replicaCount: 1
-
 image:
-  repository: nginx
+  repository: ubuntu
   tag: stable
   pullPolicy: IfNotPresent
-
-service:
-  type: ClusterIP
-  port: 80

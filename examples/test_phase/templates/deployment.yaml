@@ -1,7 +1,7 @@
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  name: {{ include "chart.fullname" . }}
+  name: {{ include "simple.fullname" . }}
   labels:
     app: {{ include "chart.name" . }}
     chart: {{ include "chart.chart" . }}
@@ -11,7 +11,7 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "chart.name" . }}
+      app: {{ include "simple.name" . }}
       release: {{ .Release.Name }}
   template:
     metadata:

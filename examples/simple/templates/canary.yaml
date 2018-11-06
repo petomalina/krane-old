@@ -1,0 +1,15 @@
+apiVersion: krane.petomalina.com/v1alpha1
+kind: Canary
+metadata:
+  name: {{ include "chart.fullname" . }}
+  labels:
+    app: {{ include "chart.name" . }}
+    chart: {{ include "chart.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  target: ""
+  testPhase:
+    image: ""
+  analysisPhase:
+    image: ""
