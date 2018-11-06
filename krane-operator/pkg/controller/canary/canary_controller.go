@@ -3,6 +3,7 @@ package canary
 import (
 	"context"
 	"log"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	kranev1alpha1 "github.com/petomalina/krane/krane-operator/pkg/apis/krane/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -12,7 +13,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -49,8 +49,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// TODO(user): Modify this to be the types you create that are owned by the primary resource
-	// Watch for changes to secondary resource Pods and requeue the owner Canary
+	// Watch our testing and analysis pods
 	err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
 		OwnerType:    &kranev1alpha1.Canary{},
@@ -80,55 +79,81 @@ type ReconcileCanary struct {
 func (r *ReconcileCanary) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	log.Printf("Reconciling Canary %s/%s\n", request.Namespace, request.Name)
 
-	// Fetch the Canary instance
 	instance := &kranev1alpha1.Canary{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			// Request object not found, could have been deleted after reconcile request.
-			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
-			// Return and don't requeue
 			return reconcile.Result{}, nil
 		}
-		// Error reading the object - requeue the request.
+
 		return reconcile.Result{}, err
 	}
 
-	// Define a new Pod object
-	pod := newPodForCR(instance)
+	// initialize with the default test bootstrap phase and reconcile
+	if instance.Status.Phase == "" {
+		log.Printf("Bootsraping newly created Canary %s/%s\n", instance.Namespace, instance.Name)
 
-	// Set Canary instance as the owner and controller
-	if err := controllerutil.SetControllerReference(instance, pod, r.scheme); err != nil {
-		return reconcile.Result{}, err
+		instance = instance.DeepCopy()
+		instance.Status.Phase = kranev1alpha1.CanaryPhaseTest
+		instance.Status.State = kranev1alpha1.CanaryStatusBootstrap
+
+		return reconcile.Result{Requeue: true}, r.client.Update(context.TODO(), instance)
 	}
 
-	// Check if this Pod already exists
-	found := &corev1.Pod{}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Name: pod.Name, Namespace: pod.Namespace}, found)
-	if err != nil && errors.IsNotFound(err) {
-		log.Printf("Creating a new Pod %s/%s\n", pod.Namespace, pod.Name)
-		err = r.client.Create(context.TODO(), pod)
-		if err != nil {
-			return reconcile.Result{}, err
-		}
-
-		// Pod created successfully - don't requeue
+	switch instance.Status.Phase {
+	case kranev1alpha1.CanaryPhaseTest:
+		return r.reconcileTestPhase(instance)
+	case kranev1alpha1.CanaryPhaseAnalysis:
+		return r.reconcileAnalysisPhase(instance)
+	default:
+		log.Printf("Unrecognized instance phase occured for %s/%s: %s", instance.Namespace, instance.Name, instance.Status.Phase)
 		return reconcile.Result{}, nil
-	} else if err != nil {
+	}
+}
+
+func (r *ReconcileCanary) reconcileTestPhase(cr *kranev1alpha1.Canary) (reconcile.Result, error) {
+	// get the current pod or create a new one
+	pod, err := r.bootstrapTestPhase(cr)
+	if err != nil || pod == nil {
+		if err != nil {
+			log.Printf("An error occured during test bootstrap %s/%s: %s\n", cr.Namespace, cr.Name, err)
+		}
 		return reconcile.Result{}, err
 	}
 
-	// Pod already exists - don't requeue
-	log.Printf("Skip reconcile: Pod %s/%s already exists", found.Namespace, found.Name)
 	return reconcile.Result{}, nil
 }
 
-// newPodForCR returns a busybox pod with the same name/namespace as the cr
-func newPodForCR(cr *kranev1alpha1.Canary) *corev1.Pod {
+func (r *ReconcileCanary) reconcileAnalysisPhase(cr *kranev1alpha1.Canary) (reconcile.Result, error) {
+	// get the current pod or create a new one
+	pod, err := r.bootstrapAnalysisPhase(cr)
+	if err != nil || pod == nil {
+		if err != nil {
+			log.Printf("An error occured during analysis bootstrap %s/%s: %s\n", cr.Namespace, cr.Name, err)
+		}
+		return reconcile.Result{}, err
+	}
+
+	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileCanary) bootstrapTestPhase(cr *kranev1alpha1.Canary) (*corev1.Pod, error) {
+	name := cr.Name + "-phase-test"
+
+	found := &corev1.Pod{}
+	err := r.client.Get(context.TODO(), types.NamespacedName{Name: name, Namespace: cr.Namespace}, found)
+	if err != nil && !errors.IsNotFound(err) {
+		return nil, err
+	} else if err == nil {
+		return found, nil
+	}
+
+	log.Printf("Testing pod not found for %s/%s, creating\n", cr.Namespace, cr.Name)
+
 	labels := map[string]string{
 		"app": cr.Name,
 	}
-	return &corev1.Pod{
+	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name + "-pod",
 			Namespace: cr.Namespace,
@@ -139,9 +164,65 @@ func newPodForCR(cr *kranev1alpha1.Canary) *corev1.Pod {
 				{
 					Name:    "busybox",
 					Image:   "busybox",
-					Command: []string{"sleep", "3600"},
+					Command: []string{"sleep", "10"},
 				},
 			},
 		},
 	}
+
+	if err := controllerutil.SetControllerReference(cr, pod, r.scheme); err != nil {
+		return nil, err
+	}
+
+	err = r.client.Create(context.TODO(), pod)
+	if err != nil {
+		return nil, err
+	}
+
+	return pod, nil
+}
+
+func (r *ReconcileCanary) bootstrapAnalysisPhase(cr *kranev1alpha1.Canary) (*corev1.Pod, error) {
+	name := cr.Name + "-phase-analysis"
+
+	found := &corev1.Pod{}
+	err := r.client.Get(context.TODO(), types.NamespacedName{Name: name, Namespace: cr.Namespace}, found)
+	if err != nil && !errors.IsNotFound(err) {
+		return nil, err
+	} else if err == nil {
+		return found, nil
+	}
+
+	log.Printf("Testing pod not found for %s/%s, creating\n", cr.Namespace, cr.Name)
+
+	labels := map[string]string{
+		"app": cr.Name,
+	}
+	pod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cr.Name + "-pod",
+			Namespace: cr.Namespace,
+			Labels:    labels,
+		},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					Name:    "busybox",
+					Image:   "busybox",
+					Command: []string{"sleep", "10"},
+				},
+			},
+		},
+	}
+
+	if err := controllerutil.SetControllerReference(cr, pod, r.scheme); err != nil {
+		return nil, err
+	}
+
+	err = r.client.Create(context.TODO(), pod)
+	if err != nil {
+		return nil, err
+	}
+
+	return pod, nil
 }

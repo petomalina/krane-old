@@ -10,16 +10,15 @@ import (
 // Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 
 const (
-	CanaryStatusPending    = "pending"
-	CanaryStatusInProgress = "in_progress"
-	CanaryStatusSuccess    = "success"
-	CanaryStatusFailed     = "failed"
+	CanaryStatusBootstrap  string = "bootstrap"
+	CanaryStatusInProgress        = "in_progress"
+	CanaryStatusSuccess           = "success"
+	CanaryStatusFailed            = "failed"
 )
 
 const (
-	CanaryPhaseBootstrap = "bootstrap"
-	CanaryPhaseTest      = "testing"
-	CanaryPhaseAnalysis  = "analysis"
+	CanaryPhaseTest     = "testing"
+	CanaryPhaseAnalysis = "analysis"
 )
 
 // CanarySpec defines the desired state of Canary
