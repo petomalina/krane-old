@@ -20,7 +20,7 @@ var (
 func main() {
 	app := cli.NewApp()
 	app.Name = "Krane"
-	app.Usage = "manipulates the krane-operator-old"
+	app.Usage = "manipulates the krane-krane-operator-old"
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{

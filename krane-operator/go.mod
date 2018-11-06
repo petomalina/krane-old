@@ -1,0 +1,57 @@
+module github.com/petomalina/krane/operator
+
+require (
+	cloud.google.com/go v0.32.0
+	github.com/PuerkitoBio/purell v1.1.0
+	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
+	github.com/davecgh/go-spew v1.1.1
+	github.com/emicklei/go-restful v2.8.0+incompatible
+	github.com/ghodss/yaml v1.0.0
+	github.com/go-logr/logr v0.0.0-20180629235805-9fb12b3b21c5
+	github.com/go-logr/zapr v0.0.0-20180713202756-7536572e8d55
+	github.com/go-openapi/jsonpointer v0.17.2
+	github.com/go-openapi/jsonreference v0.17.2
+	github.com/go-openapi/spec v0.17.2
+	github.com/go-openapi/swag v0.17.2
+	github.com/gogo/protobuf v1.1.1
+	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
+	github.com/golang/groupcache v0.0.0-20181024230925-c65c006176ff
+	github.com/golang/protobuf v1.2.0
+	github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c
+	github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf
+	github.com/google/uuid v1.0.0
+	github.com/googleapis/gnostic v0.2.0
+	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7
+	github.com/hashicorp/golang-lru v0.5.0
+	github.com/imdario/mergo v0.3.6
+	github.com/json-iterator/go v1.1.5
+	github.com/mailru/easyjson v0.0.0-20180823135443-60711f1a8329
+	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a
+	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+	github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742
+	github.com/operator-framework/operator-sdk v0.0.0-20181105061715-c627d62c77f4
+	github.com/pborman/uuid v0.0.0-20180906182336-adf5a7427709
+	github.com/petar/GoLLRB v0.0.0-20130427215148-53be0d36a84c
+	github.com/peterbourgon/diskv v2.0.1+incompatible
+	github.com/spf13/pflag v1.0.3
+	go.uber.org/atomic v1.3.2
+	go.uber.org/multierr v1.1.0
+	go.uber.org/zap v1.9.1
+	golang.org/x/crypto v0.0.0-20181030102418-4d3f4d9ffa16
+	golang.org/x/net v0.0.0-20181102091132-c10e9556a7bc
+	golang.org/x/oauth2 v0.0.0-20181102170140-232e45548389
+	golang.org/x/sys v0.0.0-20181031143558-9b800f95dbbc
+	golang.org/x/text v0.3.0
+	golang.org/x/time v0.0.0-20180412165947-fbb02b2291d2
+	golang.org/x/tools v0.0.0-20181102223251-96e9e165b75e
+	google.golang.org/appengine v1.3.0
+	gopkg.in/inf.v0 v0.9.1
+	gopkg.in/yaml.v2 v2.2.1
+	k8s.io/api v0.0.0-20180712090710-2d6f90ab1293
+	k8s.io/apimachinery v0.0.0-20180621070125-103fd098999d
+	k8s.io/client-go v0.0.0-20180806134042-1f13a808da65
+	k8s.io/code-generator v0.0.0-20180621065459-6702109cc68e
+	k8s.io/gengo v0.0.0-20181019081622-7338e4bfd691
+	k8s.io/kube-openapi v0.0.0-20181031203759-72693cb1fadd
+	sigs.k8s.io/controller-runtime v0.1.7
+)
